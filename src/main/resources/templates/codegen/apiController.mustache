@@ -1,0 +1,40 @@
+package {{package}};
+
+{{^jdk8}}
+{{#imports}}import {{import}};
+{{/imports}}
+{{/jdk8}}
+{{^jdk8}}
+import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import {{basePackage}}.service.I{{classname}}Service;
+{{/jdk8}}
+@RestController
+{{#operations}}
+public class {{classname}}Controller implements {{classname}} {
+    private static final Logger log = LoggerFactory.getLogger({{classname}}Controller.class);
+    private final I{{classname}}Service service;
+
+    @Autowired
+    public {{classname}}Controller(I{{classname}}Service service) {
+        this.service = service;
+    }
+{{^jdk8}}
+{{#operation}}
+    public {{>returnTypes}} {{operationId}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{#hasMore}},{{/hasMore}}{{/allParams}}) {
+        return service.{{operationId}}({{#allParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
+    }
+{{/operation}}
+{{/jdk8}}
+}
+{{/operations}}
