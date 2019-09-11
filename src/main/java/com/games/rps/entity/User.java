@@ -1,13 +1,13 @@
 package com.games.rps.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.DynamicUpdate;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "users")
+@DynamicUpdate
 public class User {
 
     @Id
@@ -21,6 +21,10 @@ public class User {
 
     @Column(nullable = false)
     private Boolean enabled = true;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "gamerpc_id", referencedColumnName = "id")
+    private GameRPC gameRPC;
 
     public String getUsername() {
         return username;
@@ -44,5 +48,13 @@ public class User {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public GameRPC getGameRPC() {
+        return gameRPC;
+    }
+
+    public void setGameRPC(GameRPC gameRPC) {
+        this.gameRPC = gameRPC;
     }
 }

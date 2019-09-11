@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 @RequestMapping(value = "/api")
 @Api(value = "authenticate", description = "the authenticate API")
     public interface AuthenticateApi {
-    @ApiOperation(value = "Registers User by ID", nickname = "authenticate", notes = "", response = JwtTokenDTO.class, tags={ "user", })
+    @ApiOperation(value = "Registers User by given username and password", nickname = "authenticate", notes = "", response = JwtTokenDTO.class, tags={ "user", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "OK", response = JwtTokenDTO.class),
         @ApiResponse(code = 404, message = "NOT FOUND") })
