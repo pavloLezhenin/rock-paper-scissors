@@ -22,7 +22,7 @@ public class User {
     @Column(nullable = false)
     private Boolean enabled = true;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "gamerpc_id", referencedColumnName = "id")
     private GameRPC gameRPC;
 

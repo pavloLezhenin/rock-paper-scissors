@@ -134,6 +134,8 @@ definitions:
           - DRAW
   PlayItem:
     type: object
+    required:
+      - "item"
     properties:
       item:
         type: string

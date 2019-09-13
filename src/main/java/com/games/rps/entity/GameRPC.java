@@ -41,6 +41,16 @@ public class GameRPC {
     int lastSessionGames;
     @Column
     Item lastItem;
+
+    /**
+     * This list of integers is actually a 2 dimensional array and looks like this:
+     *              Rocket    Paper    Scissors
+     *      Rocket     0        0         0
+     *      Paper      0        0         0
+     *      Scissors   0        0         0
+     * This matrix will store number of transitions from one item to other items made by gamer.
+     * As human are not good at generating random number we will try to use this matrix to forsee their next item.
+     */
     @Column
     String probabilityMatrix = "0,0,0,0,0,0,0,0,0";
 
@@ -189,5 +199,12 @@ public class GameRPC {
 
     public int getLastSessionLost() {
         return lastSessionLost;
+    }
+
+    public void resetLastSessionCounters() {
+        this.setLastSessionGames(0);
+        this.setLastSessionWins(0);
+        this.setLastSessionDraws(0);
+        this.setLastSessionLost(0);
     }
 }

@@ -35,7 +35,7 @@ public class AuthenticateApiService implements IAuthenticateApiService {
     public JwtTokenDTO authenticate(LoginUserDTO loginUser) {
         Optional<User> optionalUser = userRepository.findByUsername(loginUser.getUsername());
         optionalUser.ifPresent(it -> validatePassword(it, loginUser));
-        User user = optionalUser.orElse(save(loginUser));
+        User user = optionalUser.orElseGet(()  -> save(loginUser));
         final String token = jwtTokenUtil.generateToken(gamerUserDetailsService.getUserDetails(user));
         return new JwtTokenDTO().token(token);
     }

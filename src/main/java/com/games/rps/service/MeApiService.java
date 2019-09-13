@@ -7,6 +7,7 @@ import com.games.rps.dto.StartResultDTO;
 import com.games.rps.entity.GameRPC;
 import com.games.rps.entity.User;
 import com.games.rps.jpa.UserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,10 +24,13 @@ import java.util.Random;
 public class MeApiService implements IMeApiService {
 
     private final UserRepository userRepository;
+    private final ModelMapper mapper;
 
     @Autowired
-    public MeApiService(@NonNull UserRepository userRepository) {
+    public MeApiService(@NonNull UserRepository userRepository,
+                        @NonNull ModelMapper modelMapper) {
         this.userRepository = userRepository;
+        this.mapper = modelMapper;
     }
 
     @Override
@@ -35,19 +39,9 @@ public class MeApiService implements IMeApiService {
         GameRPC game = user.getGameRPC();
         RpcStatDTO stat = new RpcStatDTO();
         if (game != null) {
-            stat.setLastSessionGames(game.getLastSessionGames());
-            stat.setLastSessionWins(game.getLastSessionWins());
-            stat.setLastSessionDraws(game.getLastSessionDraws());
-            stat.setLastSessionLost(game.getLastSessionLost());
-            stat.setTotalGames(game.getTotalGames());
-            stat.setTotalWins(game.getTotalWins());
-            stat.setTotalDraws(game.getTotalDraws());
-            stat.setTotalLost(game.getTotalLost());
-            game.setLastSessionGames(0);
-            game.setLastSessionWins(0);
-            game.setLastSessionDraws(0);
-            game.setLastSessionLost(0);
+            stat = mapper.map(game, RpcStatDTO.class);
             game.setStarted(false);
+            userRepository.save(user);
         }
         return stat;
     }
@@ -77,20 +71,27 @@ public class MeApiService implements IMeApiService {
     @Override
     public StartResultDTO startRpc() {
         User user = getLoggedUser();
-        GameRPC gameRPC = user.getGameRPC();
-        if (gameRPC == null) {
-            gameRPC = new GameRPC();
-            gameRPC.setUser(user);
-            user.setGameRPC(gameRPC);
+        GameRPC game = user.getGameRPC();
+        if (game == null) {
+            game = new GameRPC();
+            game.setUser(user);
+            user.setGameRPC(game);
         }
 
-        gameRPC.setStarted(true);
+        game.resetLastSessionCounters();
+        game.setStarted(true);
         userRepository.save(user);
         StartResultDTO startResultDTO = new StartResultDTO();
         startResultDTO.setItem(StartResultDTO.ItemEnum.STARTED);
         return startResultDTO;
     }
 
+    /**
+     * This method tries to find most probable transition from previous item made by a gamer
+     * and returns item which beats this most probable one.
+     * @param game
+     * @return
+     */
     private GameRPC.Item getTheBestComputerItem(GameRPC game) {
         GameRPC.Item computerItem;
         int numberOfItems = GameRPC.Item.values().length;
@@ -98,6 +99,8 @@ public class MeApiService implements IMeApiService {
             int start = game.getLastItem().ordinal() * numberOfItems;
             int max = Integer.MIN_VALUE;
             GameRPC.Item maxItem = GameRPC.Item.ROCKET;
+
+            //trying to find most probable next item made by a gamer based on previous results
             List<Integer> probabilities = game.getProbabilityMatrix();
             for (int i = start; i < start + numberOfItems; i++) {
                 if (probabilities.get(i) > max) {

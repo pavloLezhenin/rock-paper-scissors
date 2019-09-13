@@ -60,7 +60,8 @@ public class PlayItemDTO   {
    * Get item
    * @return item
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
 
   public ItemEnum getItem() {
