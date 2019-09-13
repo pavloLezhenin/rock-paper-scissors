@@ -1,0 +1,290 @@
+{
+	"info": {
+		"_postman_id": "c554e139-da3a-460e-9186-ab5ec26c328d",
+		"name": "Rocket-Paper-Scissors",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "authenticate",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "c2874a67-c4bf-4765-b959-eb029ff12e83",
+						"exec": [
+							"pm.test(\"Create users\", function() {",
+							"    ",
+							"    pm.environment.set(\"username\", \"me\" + pm.info.iteration);",
+							"    pm.environment.set(\"password\", \"password\" + pm.info.iteration);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "e0789384-b5e4-4451-b9eb-112213ad86ad",
+						"exec": [
+							"pm.test(\"Get token\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"token\", jsonData.token);",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYXZhaW51c2UiLCJleHAiOjE1NjgxMjkxMDQsImlhdCI6MTU2ODExMTEwNH0.m3h7awAXd2gZ8ib0R0bITSG2iQciw-X3MTsgOKu5denycynMgoXXrh16zf_ESo17LA1NhY7Ks-L-W4OkoNnd0g",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"password\": \"{{password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base}}/api/authenticate",
+					"host": [
+						"{{base}}"
+					],
+					"path": [
+						"api",
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "startGameSession",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f4fdbc84-a2d2-4942-bd4f-9572665fd422",
+						"exec": [
+							"pm.test(\"Session started\", function() {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.item).to.eql(\"STARTED\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"me\",\n\t\"password\": \"password\"\n}"
+				},
+				"url": {
+					"raw": "{{base}}/api/me/startrpc",
+					"host": [
+						"{{base}}"
+					],
+					"path": [
+						"api",
+						"me",
+						"startrpc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "playOneGame",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "b254e35b-ab04-419e-a09a-c765df18e898",
+						"exec": [
+							"pm.test(\"Loop for games\", function() {",
+							"",
+							"    var arr = [\"ROCKET\", \"PAPER\", \"SCISSORS\"]",
+							"",
+							"    var gameNumber = pm.environment.get(\"gameNumber\");",
+							"    if (!gameNumber) {",
+							"        pm.environment.set(\"gameNumber\", 0);",
+							"    }",
+							"    ",
+							"    gameNumber++;",
+							"    pm.environment.set(\"gameNumber\", gameNumber);",
+							"    ",
+							"    pm.environment.set(\"item\", arr[gameNumber % 3]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "0424fb88-a73b-4378-9fd2-7a8b00c328e6",
+						"exec": [
+							"pm.test(\"Session started\", function() {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    var gameNumber = Number.parseInt(pm.environment.get(\"gameNumber\"));",
+							"    ",
+							"    if (gameNumber > 100) {",
+							"        postman.setNextRequest(\"stopGameSession\");",
+							"        pm.environment.set(\"gameNumber\", 0);",
+							"    } else {",
+							"        postman.setNextRequest(\"playOneGame\")",
+							"    }",
+							"    ",
+							"    if (gameNumber > 4) {",
+							"        var jsonData = pm.response.json();",
+							"        pm.expect(jsonData.result).to.eql(\"COMPUTER_WON\");",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"item\": \"{{item}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base}}/api/me/playrpc",
+					"host": [
+						"{{base}}"
+					],
+					"path": [
+						"api",
+						"me",
+						"playrpc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "stopGameSession",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "cc46f2fa-66ae-427d-87e7-939feb5f1997",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"item\": \"ROCKET\"\n}"
+				},
+				"url": {
+					"raw": "{{base}}/api/me/stoprpc",
+					"host": [
+						"{{base}}"
+					],
+					"path": [
+						"api",
+						"me",
+						"stoprpc"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "3c0c704e-fa84-489f-9532-2c8cd0c0d97d",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "218be67a-6281-4b32-819e-b03b45ae94e8",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "3ff93038-8fd2-47ac-9404-717917d0201c",
+			"key": "token",
+			"value": "",
+			"type": "string",
+			"disabled": true
+		}
+	]
+}
