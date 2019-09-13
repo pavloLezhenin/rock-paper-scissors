@@ -65,5 +65,17 @@ In database we have all users with games:
 ![](images/Users.PNG)
 ![](images/Games.PNG)
   
-  
+## Performance.
+As you can see from previous images play game request is about 10ms which is actually nothing, but let's say we have 20ms per request.
+From requirements we should support 1M users per day. It means that in average every second we would have 12 users online.
+Spending 20ms on one request results in 50 requests per second. Which results in 4 requests from each user during 1 second.
+
+Moreover we used just one thread for posting requests. Having more parallel requests could increase performance. So performance should be fine.
+
+## How to Build:
+That is a maven project and to produce WAR archive simply run:
+```cmd
+mvn clean package
+```
+
   
